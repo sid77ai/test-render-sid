@@ -1,0 +1,29 @@
+# =============================================================================
+# .gitignore — Never commit secrets or local state
+# =============================================================================
+
+# Secrets — NEVER commit these
+.env
+*.key
+*.pem
+
+# Local state — regenerated on each deploy
+state.db
+state.db-*
+sessions/
+memory/
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node (if you ever build locally)
+node_modules/

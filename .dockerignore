@@ -1,0 +1,8 @@
+# .dockerignore — exclude from Docker build context
+.git
+.gitignore
+README.md
+.env.example
+*.swp
+*.swo
+.DS_Store
