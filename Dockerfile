@@ -12,19 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Switch back to the hermes user
-USER hermes
+# Stay as root so the start command can chown the Railway-mounted volume.
+# The entrypoint.sh handles dropping to the hermes user internally.
 
-# Copy custom skills into the skills directory
-# These are loaded automatically by Hermes on startup
 COPY --chown=hermes:hermes skills/ ${HERMES_HOME}/skills/
-
-# Copy base config (no secrets — secrets go in .env on persistent disk)
 COPY --chown=hermes:hermes config/config.yaml ${HERMES_HOME}/config.yaml
-
-# Copy SOUL.md (personality file)
 COPY --chown=hermes:hermes SOUL.md ${HERMES_HOME}/SOUL.md
-
-# Note: .env with API keys is NOT baked into the image.
-# Set it via the Hermes dashboard after first boot, or via Render's
-# Environment tab. The persistent disk keeps it across deploys.
