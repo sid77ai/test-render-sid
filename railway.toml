@@ -12,8 +12,10 @@
 #   HERMES_DASHBOARD_PORT   8080
 #   HERMES_DASHBOARD_TUI    1
 #
+#   GATEWAY_ALLOW_ALL_USERS true   (allows anyone to use the web UI — fine for POC)
+#
 # Optional (Telegram):
-#   TELEGRAM_BOT_TOKEN      from @BotFather on Telegram
+#   TELEGRAM_BOT_TOKEN      from @BotFather on Telegram (no trailing newline when pasting!)
 #   TELEGRAM_ALLOW_FROM     your numeric Telegram user ID (from @userinfobot)
 # =============================================================================
 
