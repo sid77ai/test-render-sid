@@ -24,7 +24,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "/bin/sh -c 'chown -R hermes:hermes /opt/data && touch /opt/hermes/ui-tui/packages/hermes-ink/dist/ink-bundle.js /opt/hermes/ui-tui/dist/entry.js && chown -R hermes:hermes /opt/hermes/ui-tui /opt/hermes/node_modules && exec /usr/bin/tini -g -- /opt/hermes/docker/entrypoint.sh gateway run'"
+startCommand = "/bin/sh -c 'chown -R hermes:hermes /opt/data && cp /opt/hermes/config.yaml /opt/data/config.yaml && touch /opt/hermes/ui-tui/packages/hermes-ink/dist/ink-bundle.js /opt/hermes/ui-tui/dist/entry.js && chown -R hermes:hermes /opt/hermes/ui-tui /opt/hermes/node_modules && exec /usr/bin/tini -g -- /opt/hermes/docker/entrypoint.sh gateway run'"
 healthcheckPath = "/api/status"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"

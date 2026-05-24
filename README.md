@@ -85,7 +85,6 @@ Go to your Railway service → **Variables** tab → add each of these:
 | `HERMES_DASHBOARD_PORT` | `8080` | The port Railway routes traffic to |
 | `HERMES_DASHBOARD_TUI` | `1` | Enables the full chat UI in the browser |
 | `GATEWAY_ALLOW_ALL_USERS` | `true` | Lets you log in to the dashboard (without this, access is blocked) |
-| `HERMES_CONFIG` | `/opt/hermes/config.yaml` | Tells Hermes where to find the config (see explanation below) |
 
 #### Optional — for Telegram
 
@@ -139,8 +138,8 @@ Hermes never sees it and falls back to its built-in default model (`claude-opus-
 which costs money and hits rate limits immediately.
 
 The fix in this repo: `config.yaml` is copied to `/opt/hermes/config.yaml` during build —
-a folder Railway's volume doesn't touch. Setting `HERMES_CONFIG=/opt/hermes/config.yaml`
-tells Hermes to read config from there instead.
+a folder Railway's volume doesn't touch. The start command in `railway.toml` then copies
+it into `/opt/data/config.yaml` every time the container boots, before Hermes reads it.
 
 ---
 
