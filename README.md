@@ -8,228 +8,169 @@ ready-to-deploy configuration for Render.com, plus custom skills.
 - Web dashboard at `https://your-service.onrender.com`
 - In-browser chat (full TUI, no terminal needed)
 - Persistent disk for skills, sessions, and memory
-- Telegram bot support (optional)
+- Telegram bot support
 
 ---
 
 ## Prerequisites
 
-1. **A Render account** — https://render.com (free, no credit card)
+1. **A Render account** — https://render.com (free signup, credit card required for Standard plan)
 2. **An OpenRouter API key** — https://openrouter.ai/keys (free tier available)
-3. **A GitHub account** — to host this repo
-4. **~10 minutes**
+3. **A Telegram bot** — create one via @BotFather on Telegram
+4. **Your Telegram user ID** — get it from @userinfobot on Telegram
+5. **A GitHub account** — to host this repo
 
 ---
 
 ## Step-by-Step Deployment Guide
 
-### Step 1: Fork/Copy this Repo to GitHub
-
-Option A — Fork:
-```
-1. Go to the original repo URL
-2. Click "Fork" in the top-right
-3. Your copy: github.com/YOUR_USERNAME/hermes-cloud
-```
-
-Option B — Create a new repo:
-```
-1. Create a new repo on GitHub (e.g., "hermes-cloud")
-2. Push this folder to it:
-```
+### Step 1: Push this Repo to GitHub
 
 ```bash
 cd /Users/sid/test-hermes-render
 git init
 git add .
-git commit -m "Initial Hermes cloud deployment"
+git commit -m "Hermes cloud deployment"
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/hermes-cloud.git
+git remote add origin https://github.com/YOUR_USERNAME/test-render-sid.git
 git push -u origin main
 ```
 
----
-
-### Step 2: Get an OpenRouter API Key
-
-```
-1. Go to https://openrouter.ai/keys
-2. Sign up (free)
-3. Click "Create Key"
-4. Copy the key (starts with "sk-or-v1-...")
-You need this for Step 4.
-```
+Replace `YOUR_USERNAME` with your actual GitHub username.
 
 ---
 
-### Step 3: Create the Render Service
+### Step 2: Deploy to Render
 
 ```
-1. Go to https://dashboard.render.com
-2. Click "New +" → "Web Service"
-3. Connect your GitHub repo ("hermes-cloud")
-4. Configure:
-   - Name: hermes (or whatever you like)
-   - Region: Oregon (or closest to you)
-   - Branch: main
-   - Runtime: Docker
-   - Plan: Free (for POC) or Standard $7/mo (for always-on + Telegram)
-5. Click "Create Web Service"
+1. Go to https://dashboard.render.com/blueprints
+2. Click "New Blueprint Instance"
+3. Connect your GitHub account if not already
+4. Select your repo "test-render-sid"
+5. Render reads render.yaml and shows you the service config
+6. Click "Apply"
+7. Render creates the service and starts deploying
 ```
+
+**Note:** The first deploy takes ~3-5 minutes. It pulls the Docker image and starts the gateway.
 
 ---
 
-### Step 4: Set Your API Key
-
-Wait for the build to finish (~2-3 minutes for Docker build). Then:
+### Step 3: Set Your API Keys in Render
 
 ```
-1. In Render Dashboard, go to your service
+1. In your Render Dashboard, click on your new service
 2. Click "Environment" in the left sidebar
-3. Click "Add Environment Variable"
-4. Key: OPENROUTER_API_KEY
-5. Value: sk-or-v1-... (your actual key)
-6. Click "Save Changes"
-7. The service will redeploy automatically
+3. Add these environment variables:
+
+   OPENROUTER_API_KEY = sk-or-v1-...     (your actual key)
+   TELEGRAM_BOT_TOKEN = 123456:ABC...    (from @BotFather)
+   TELEGRAM_HOME_CHANNEL = 8630066373    (your user ID from @userinfobot)
+
+4. Click "Save Changes"
+5. The service redeploys automatically with the new keys
 ```
 
 ---
 
-### Step 5: Open the Dashboard
+### Step 4: Test It
 
+**Dashboard:**
 ```
-1. Copy your service URL from Render (e.g., hermes.onrender.com)
+1. Copy your service URL from Render (e.g., test-render-sid.onrender.com)
 2. Open it in your browser
 3. You should see the Hermes dashboard
-4. Click the "Chat" tab
-5. Start talking to Hermes!
+4. Click "Chat" tab
+5. Start chatting
+```
+
+**Telegram:**
+```
+1. Open Telegram
+2. Find your new bot (search by username you gave it)
+3. Send /start
+4. Send any message
+5. Hermes should respond
 ```
 
 ---
 
-### Step 6 (Optional): Connect Telegram
+## Important: Free vs Standard Plan
 
-```
-1. On Telegram, message @BotFather
-2. Send /newbot, follow the prompts
-3. Copy the bot token (looks like 123456:ABC-DEF...)
-4. In Render Dashboard → Environment:
-   - Add TELEGRAM_BOT_TOKEN = your token
-5. Message @userinfobot on Telegram to get your user ID
-6. In Render Dashboard → Environment:
-   - Add TELEGRAM_ALLOW_FROM = your user ID
-7. Service redeploys
-8. Message your bot on Telegram — Hermes should respond!
-```
+| Feature | Free | Standard ($7/mo) |
+|---------|------|-------------------|
+| Dashboard | Yes (sleeps after 15min) | Yes (always on) |
+| Telegram | No (sleeps = no polling) | Yes |
+| Persistent disk | Yes | Yes |
+| Credit card needed | No | Yes |
+
+**For the POC with Telegram, you need Standard ($7/mo).**
+
+If you just want to test the dashboard first, Free works. You can upgrade later from Render Dashboard → Plan.
 
 ---
 
-## Important Notes
+## Security Notes
 
-### Free Tier Limitations
-- Free tier SLEEPS after 15 min of inactivity
-- First request after sleep takes ~30 sec to wake up
-- Telegram gateway does NOT work on free tier (needs always-on)
-- Upgrade to Standard ($7/mo) for Telegram + always-on
-
-### Where Your Data Lives
-- All state (skills, sessions, memory) is on a 5GB persistent disk
-- Survives deploys, restarts, and upgrades
-- NOT backed up automatically — see "Backups" below
-
-### Security
-- Your API keys are set via Render's environment, NOT in the repo
-- .env is in .gitignore — never gets committed
-- The service is public by default — anyone with the URL can access
-- If you add Telegram, only your user ID can interact with the bot
-
-### Backups
-To back up your Hermes state:
-```
-1. Go to your service in Render Dashboard
-2. Click "Shell" (if available on your plan)
-3. Run: tar -czf /tmp/hermes-backup.tar.gz /opt/data/
-4. Download via Render's file browser, OR
-5. Set up automated backups with cron to an external location
-```
+- **NO secrets in GitHub.** The `render.yaml` has empty values. Real keys go in Render's Environment tab.
+- **Telegram bot only responds to your user ID.** Set `TELEGRAM_HOME_CHANNEL` to your ID.
+- **Dashboard is public by default.** Anyone with the URL can access it.
 
 ---
 
 ## Repo Structure
 
 ```
-hermes-cloud/
-├── Dockerfile              # Docker image definition
-├── render.yaml             # Render blueprint (optional, for Blueprint deploys)
-├── .env.example            # Template for environment variables
-├── .gitignore              # Excludes secrets from git
-├── SOUL.md                 # Hermes personality file
+test-render-sid/
+├── render.yaml             # Render Blueprint config (no secrets!)
+├── docker-compose.yaml     # For local testing / future VPS migration
+├── .env.example            # Template showing what keys to set
+├── .gitignore              # Excludes .env, state.db, sessions/
+├── .dockerignore
+├── SOUL.md                 # Hermes personality
 ├── config/
-│   └── config.yaml         # Base configuration (no secrets)
+│   └── config.yaml         # Base config (no secrets)
 ├── skills/
 │   ├── agent-security/     # OWASP ASI threat defense
-│   └── scrapify/           # Web scraping + AI analysis
+│   └── scrapify/           # Web scraping + security
 └── README.md               # This file
 ```
 
 ---
 
-## Updating Hermes
+## Troubleshooting
 
-To update to a new version of Hermes:
-```
-1. Edit Dockerfile, change the image tag
-2. Push to GitHub
-3. Render auto-deploys (if autoDeploy is on)
-4. Or manually deploy from Render Dashboard
-```
+**"Deploy failed":**
+- Check build logs in Render Dashboard
+- Make sure the repo is pushed to the correct branch (main)
 
-To add more skills:
-```
-1. Copy skill folder into skills/
-2. Push to GitHub
-3. Redeploy
-```
+**"Service crashes":**
+- Check service logs in Render Dashboard
+- Most common: missing OPENROUTER_API_KEY
+- Add the key in Environment tab and redeploy
+
+**"Telegram bot doesn't respond":**
+- Make sure plan is Standard (not Free)
+- Check TELEGRAM_BOT_TOKEN is correct
+- Check TELEGRAM_HOME_CHANNEL matches your user ID
+- Check logs for errors
+
+**"Chat tab shows error":**
+- Known upstream bug. The dockerCommand fix should handle it.
+- Try redeploying if it persists.
 
 ---
 
 ## Migrating to a VPS Later
 
-When you're ready to move off Render:
+When ready to move off Render:
+```bash
+# On your VPS:
+git clone https://github.com/YOUR_USERNAME/test-render-sid.git
+cd test-render-sid
+cp .env.example .env
+# Edit .env with your keys
+docker compose up -d
 ```
-1. Same Dockerfile works on any Docker host
-2. Same docker-compose.yaml works anywhere
-3. Just need to:
-   - Provision a VPS (Hetzner CPX22 recommended)
-   - Install Docker + docker-compose
-   - Copy this repo
-   - docker compose up -d
-```
 
-The Hermes state (sessions, memory, skills) is on the persistent disk.
-You'll need to migrate that separately if you want to keep history.
-
----
-
-## Troubleshooting
-
-**"Build failed" in Render:**
-- Check the build logs in Render Dashboard
-- Most common issue: Dockerfile syntax error
-- Make sure the base image tag is correct
-
-**"Service crashes on start":**
-- Check the service logs in Render Dashboard
-- Most common issue: missing OPENROUTER_API_KEY
-- Make sure the key is set in Environment variables
-
-**"Chat tab shows error":**
-- This is a known upstream bug with the ink-bundle.js
-- The dockerCommand in render.yaml already includes the fix
-- If it persists, try redeploying
-
-**"Telegram bot doesn't respond":**
-- Make sure plan is Standard (not Free — free sleeps)
-- Check TELEGRAM_BOT_TOKEN is correct
-- Check TELEGRAM_ALLOW_FROM matches your user ID
-- Check logs in Render Dashboard
+Same Dockerfile, same config, different host.

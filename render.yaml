@@ -1,33 +1,27 @@
 # =============================================================================
 # Hermes Agent on Render — Blueprint Config
 # =============================================================================
+# Deploy Hermes Agent on Render using a pre-built Docker image.
 #
-# TWO DEPLOYMENT OPTIONS:
+# HOW TO DEPLOY:
+#   1. Push this repo to GitHub
+#   2. Go to https://dashboard.render.com/blueprints
+#   3. Click "New Blueprint Instance"
+#   4. Connect your GitHub repo
+#   5. Render reads this file and creates the service automatically
+#   6. Set your API keys in Render Dashboard → Environment tab
 #
-# OPTION A — Simple (recommended for POC):
-#   Uses the pre-built Docker Hub image. No Dockerfile needed.
-#   Faster deploys, no build minutes used.
-#   Custom skills are loaded from the persistent disk after first boot.
-#   → Use the 'runtime: image' section below.
-#
-# OPTION B — Custom (your own Dockerfile with custom skills baked in):
-#   Builds from the Dockerfile in this repo.
-#   Slower deploys, uses build minutes.
-#   Custom skills are baked into the image.
-#   → Use the 'runtime: docker' section below.
-#
-# Uncomment ONE option, comment out the other.
+# NOTE: Free tier sleeps after 15 min inactivity.
+#       Upgrade to Standard ($7/mo) for always-on + Telegram.
 # =============================================================================
 
-# ─────────────────────────────────────────────────────────────────────────────
-# OPTION A: Simple — Pre-built image (RECOMMENDED FOR POC)
-# ─────────────────────────────────────────────────────────────────────────────
 services:
   - type: web
     name: hermes
     runtime: image
     region: oregon
-    plan: free
+    plan: standard          # Use 'standard' for always-on (required for Telegram)
+                            # Change to 'free' for POC without Telegram (sleeps after 15min)
     image:
       url: docker.io/nousresearch/hermes-agent:v2026.5.7
 
@@ -47,6 +41,7 @@ services:
       sizeGB: 5
 
     envVars:
+      # Dashboard (web UI)
       - key: HERMES_DASHBOARD
         value: "1"
       - key: HERMES_DASHBOARD_HOST
@@ -55,46 +50,19 @@ services:
         value: "10000"
       - key: HERMES_DASHBOARD_TUI
         value: "1"
+
+      # Gateway token (auto-generated)
       - key: HERMES_GATEWAY_TOKEN
         generateValue: true
-      - key: OPENROUTER_API_KEY
-        value: "PASTE_YOUR_OPENROUTER_KEY"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# OPTION B: Custom — Build from Dockerfile (uncomment to use)
-# ─────────────────────────────────────────────────────────────────────────────
-# services:
-#   - type: web
-#     name: hermes
-#     runtime: docker
-#     region: oregon
-#     plan: free
-#
-#     dockerCommand: >-
-#       /bin/sh -c
-#       "touch /opt/hermes/ui-tui/packages/hermes-ink/dist/ink-bundle.js
-#        /opt/hermes/ui-tui/dist/entry.js
-#        && chown -R hermes:hermes /opt/hermes/ui-tui /opt/hermes/node_modules
-#        && exec /usr/bin/tini -g -- /opt/hermes/docker/entrypoint.sh gateway run"
-#
-#     autoDeployTrigger: off
-#     healthCheckPath: /api/status
-#
-#     disk:
-#       name: hermes-data
-#       mountPath: /opt/data
-#       sizeGB: 5
-#
-#     envVars:
-#       - key: HERMES_DASHBOARD
-#         value: "1"
-#       - key: HERMES_DASHBOARD_HOST
-#         value: "0.0.0.0"
-#       - key: HERMES_DASHBOARD_PORT
-#         value: "10000"
-#       - key: HERMES_DASHBOARD_TUI
-#         value: "1"
-#       - key: HERMES_GATEWAY_TOKEN
-#         generateValue: true
-#       - key: OPENROUTER_API_KEY
-#         value: "PASTE_YOUR_OPENROUTER_KEY"
+      # LLM Provider — SET THIS IN RENDER DASHBOARD
+      - key: OPENROUTER_API_KEY
+        value: ""
+
+      # Telegram — SET THESE IN RENDER DASHBOARD
+      # Get bot token from @BotFather on Telegram
+      # Get your user ID from @userinfobot
+      - key: TELEGRAM_BOT_TOKEN
+        value: ""
+      - key: TELEGRAM_HOME_CHANNEL
+        value: ""

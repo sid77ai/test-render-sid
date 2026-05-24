@@ -1,0 +1,30 @@
+# =============================================================================
+# Hermes Agent — Railway Config
+# =============================================================================
+# Railway reads this file automatically when you deploy from GitHub.
+#
+# BEFORE DEPLOYING — set these in Railway Dashboard → your service → Variables:
+#
+#   OPENROUTER_API_KEY      your key from https://openrouter.ai/keys
+#   HERMES_GATEWAY_TOKEN    any random string (run: openssl rand -hex 32)
+#   HERMES_DASHBOARD        1
+#   HERMES_DASHBOARD_HOST   0.0.0.0
+#   HERMES_DASHBOARD_PORT   8080
+#   HERMES_DASHBOARD_TUI    1
+#
+# Optional (Telegram):
+#   TELEGRAM_BOT_TOKEN      from @BotFather on Telegram
+#   TELEGRAM_ALLOW_FROM     your numeric Telegram user ID (from @userinfobot)
+# =============================================================================
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "/bin/sh -c 'touch /opt/hermes/ui-tui/packages/hermes-ink/dist/ink-bundle.js /opt/hermes/ui-tui/dist/entry.js && chown -R hermes:hermes /opt/hermes/ui-tui /opt/hermes/node_modules && exec /usr/bin/tini -g -- /opt/hermes/docker/entrypoint.sh gateway run'"
+healthcheckPath = "/api/status"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+numReplicas = 1
